@@ -63,10 +63,8 @@ class MPEG1Muxer extends EventEmitter {
                                 console.error(`${this.streamName} stream exited`);
                                 console.log(code, signal);
 
-                                if (signal !== 'SIGTERM') {
-                                        if (this.restartOnUnexpectedClose) {
-                                                this.startStream();
-                                        }
+                                if (signal !== 'SIGTERM' && this.restartOnUnexpectedClose) {
+                                        this.startStream();
                                 }
                         });
                 }

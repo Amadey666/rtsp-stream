@@ -3,7 +3,7 @@
     "description": "A library that takes an rtsp stream and broadcasts it over a websocket for jsmpeg on client.",
     "author": "Amadey666",
     "license": "GPL-3.0",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
     "scripts": {
