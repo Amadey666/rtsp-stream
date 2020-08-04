@@ -6,7 +6,7 @@ export interface MPEG1MuxerOptions {
         streamURL: string;
         streamName: string;
         ffmpegPath: string;
-        ffmpegOptions?: Array<string>;
+        restartOnUnexpectedClose?: boolean;
         captureRejections?: boolean;
 }
 
@@ -19,6 +19,8 @@ class MPEG1Muxer extends EventEmitter {
 
         private ffmpegOptions: Array<string> = [];
 
+        private restartOnUnexpectedClose: boolean;
+
         private stream: childProcess.ChildProcessWithoutNullStreams | null = null;
 
         public constructor(options: MPEG1MuxerOptions) {
@@ -27,20 +29,13 @@ class MPEG1Muxer extends EventEmitter {
                 this.streamURL = options.streamURL;
                 this.streamName = options.streamName;
                 this.ffmpegPath = options.ffmpegPath;
+                this.restartOnUnexpectedClose = options.restartOnUnexpectedClose || true;
 
-                this.initOptions(options.ffmpegOptions);
+                this.initOptions();
                 this.startStream();
         }
 
-        private initOptions = (ffmpegOptions: Array<string> | undefined) => {
-                const additionalFlags: Array<string> = [];
-
-                if (ffmpegOptions) {
-                        ffmpegOptions.forEach((opt: string) => {
-                                additionalFlags.push(opt);
-                        });
-                }
-
+        private initOptions = () => {
                 this.ffmpegOptions = [
                         '-rtsp_transport',
                         'tcp',
@@ -50,7 +45,6 @@ class MPEG1Muxer extends EventEmitter {
                         'mpegts',
                         '-codec:v',
                         'mpeg1video',
-                        ...additionalFlags,
                         '-'
                 ];
         };
@@ -62,12 +56,18 @@ class MPEG1Muxer extends EventEmitter {
                         });
 
                         this.stream.stderr.on('data', (data: Buffer) => {
-                                console.log(data);
                                 this.emit(config.events.sendFFMPEGError, data);
                         });
 
-                        this.stream.on('exit', () => {
+                        this.stream.on('exit', (code: number, signal: string) => {
                                 console.error(`${this.streamName} stream exited`);
+                                console.log(code, signal);
+
+                                if (signal !== 'SIGTERM') {
+                                        if (this.restartOnUnexpectedClose) {
+                                                this.startStream();
+                                        }
+                                }
                         });
                 }
         };
@@ -84,6 +84,7 @@ class MPEG1Muxer extends EventEmitter {
 
         public closeStream = () => {
                 console.log(`Close stream ${this.streamName}`);
+
                 if (this.stream) {
                         this.stream.kill();
                 }

@@ -3,12 +3,13 @@
     "description": "A library that takes an rtsp stream and broadcasts it over a websocket for jsmpeg on client.",
     "author": "Amadey666",
     "license": "GPL-3.0",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
     "scripts": {
         "start": "yarn build && node lib",
-        "build": "tsc"
+        "build": "tsc",
+        "example": "node example"
     },
     "devDependencies": {
         "@typescript-eslint/eslint-plugin": "^3.7.1",

@@ -1,20 +1,13 @@
 import ws from 'ws';
 import { EventEmitter } from 'events';
-import MPEG1Muxer from './MPEG1Muxer';
+import MPEG1Muxer, { MPEG1MuxerOptions } from './MPEG1Muxer';
 import config from './config.json';
 
-export interface VideoStreamOptions {
-        streamName: string;
-        streamURL: string;
+export interface VideoStreamOptions extends MPEG1MuxerOptions {
         wsPort: number;
-        streamWidth?: number;
-        streamHeight?: number;
-        ffmpegOptions?: Array<string>;
-        ffmpegPath?: string;
-        captureRejections?: boolean;
 }
 
-const HEADER_FIRST_BYTES = 'jsmp';
+const HEADER_FIRST_BYTES = 'amas';
 
 class VideoStream extends EventEmitter {
         private options: VideoStreamOptions;
@@ -23,9 +16,9 @@ class VideoStream extends EventEmitter {
 
         private streamURL: string;
 
-        private streamWidth: number | null;
+        private streamWidth: number | null = null;
 
-        private streamHeight: number | null;
+        private streamHeight: number | null = null;
 
         private server: ws.Server | null = null;
 
@@ -39,8 +32,6 @@ class VideoStream extends EventEmitter {
                 this.options = options;
                 this.streamName = options.streamName;
                 this.streamURL = options.streamURL;
-                this.streamWidth = options.streamWidth ? options.streamWidth : null;
-                this.streamHeight = options.streamHeight ? options.streamHeight : null;
         }
 
         public start = () => {
@@ -60,7 +51,7 @@ class VideoStream extends EventEmitter {
                         streamName: this.streamName,
                         streamURL: this.streamURL,
                         ffmpegPath: this.options.ffmpegPath ? this.options.ffmpegPath : 'ffmpeg',
-                        ffmpegOptions: this.options.ffmpegOptions
+                        restartOnUnexpectedClose: this.options.restartOnUnexpectedClose
                 });
 
                 this.initMPEG1Callbacks();

@@ -17,5 +17,8 @@
         "baseUrl": "src",
         "resolveJsonModule": true,
         "noEmit": false
-    }
+    },
+    "include": [
+        "src"
+    ]
 }
